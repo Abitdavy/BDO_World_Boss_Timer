@@ -1,0 +1,67 @@
+name: Build & Publish Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build & Release Flutter APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Tests
+        run: flutter test test/schedule_service_test.dart
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Determine Version Tag
+        id: get_tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "TAG_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=v1.0.9" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: BDO Boss Timer ${{ env.TAG_NAME }}
+          body: |
+            ## ⚔️ BDO World Boss Timer Release
+            Automated release generated via GitHub Actions CI/CD.
+
+            ### Features:
+            - Complete schedule for 13 World Bosses.
+            - Local push notifications with instant tap navigation.
+            - Automatic device timezone detection & manual timezone options.
+            - Modern gaming dark UI.
+          draft: false
+          prerelease: false
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
