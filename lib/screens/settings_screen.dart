@@ -385,7 +385,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'v1.0.9 (Build 10)',
+                      'v1.0.10 (Build 11)',
                       style: GoogleFonts.rajdhani(
                         color: const Color(0xFF607D8B),
                         fontSize: 12,
