@@ -38,10 +38,6 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Prepare APK Asset
-        run: |
-          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/bdo-wb-timer.apk
-
       - name: Determine Version Tag
         id: get_tag
         run: |
@@ -50,6 +46,10 @@ jobs:
           else
             echo "TAG_NAME=v1.0.10" >> $GITHUB_ENV
           fi
+
+      - name: Prepare Dynamic Versioned APK Asset
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/bdo-wb-timer-${{ env.TAG_NAME }}.apk
 
       - name: Create GitHub Release & Upload APK
         uses: softprops/action-gh-release@v2
@@ -68,6 +68,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            build/app/outputs/flutter-apk/bdo-wb-timer.apk
+            build/app/outputs/flutter-apk/bdo-wb-timer-${{ env.TAG_NAME }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
