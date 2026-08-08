@@ -17,6 +17,22 @@ class ScheduleService {
     'Sunday': DateTime.sunday,
   };
 
+  static const List<String> allBosses = [
+    "Sangoon",
+    "Uturi",
+    "Bulgasal",
+    "Golden Pig King",
+    "Nouver",
+    "Karanda",
+    "Kzarka",
+    "Kutum",
+    "Garmoth",
+    "Muraka",
+    "Offin",
+    "Quint",
+    "Vell",
+  ];
+
   static const Map<String, String> bossImageAssets = {
     'Sangoon': 'assets/bosses/Sangoon.jfif',
     'Uturi': 'assets/bosses/Uturi.png',
@@ -65,6 +81,7 @@ class ScheduleService {
     int offsetMinutes = 420,
     String timezoneCode = 'WIB',
     int daysAhead = 7,
+    List<String>? enabledBosses,
   }) {
     if (_data == null) return [];
     final nowUtc = getNowUtc();
@@ -82,6 +99,14 @@ class ScheduleService {
       );
 
       for (final spawn in daySchedule.spawns) {
+        final activeBosses = enabledBosses != null
+            ? spawn.bosses.where((b) => enabledBosses.contains(b)).toList()
+            : spawn.bosses;
+
+        if (enabledBosses != null && activeBosses.isEmpty) {
+          continue;
+        }
+
         final spawnTimeWib = DateTime.utc(
           checkDateWib.year,
           checkDateWib.month,
@@ -99,8 +124,19 @@ class ScheduleService {
               '${spawnTimeTarget.hour.toString().padLeft(2, '0')}:${spawnTimeTarget.minute.toString().padLeft(2, '0')}';
           final displayDay = _weekdayToString(spawnTimeTarget.weekday);
 
+          final effectiveSpawn = activeBosses.length == spawn.bosses.length
+              ? spawn
+              : BossSpawn(
+                  timeWib: spawn.timeWib,
+                  timeUtc: spawn.timeUtc,
+                  bosses: activeBosses,
+                  lomlBoss: spawn.lomlBoss,
+                  location: spawn.location,
+                  day: spawn.day,
+                );
+
           result.add(UpcomingSpawn(
-            spawn: spawn,
+            spawn: effectiveSpawn,
             spawnTimeUtc: spawnTimeUtc,
             spawnTimeTarget: spawnTimeTarget,
             displayTime: displayTime,
@@ -120,11 +156,13 @@ class ScheduleService {
   UpcomingSpawn? getNextSpawn({
     int offsetMinutes = 420,
     String timezoneCode = 'WIB',
+    List<String>? enabledBosses,
   }) {
     final upcoming = getUpcomingSpawns(
       offsetMinutes: offsetMinutes,
       timezoneCode: timezoneCode,
       daysAhead: 7,
+      enabledBosses: enabledBosses,
     );
     return upcoming.isNotEmpty ? upcoming.first : null;
   }

@@ -5,27 +5,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../models/timezone_model.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
+import '../services/schedule_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   static const List<int> availableLeadTimes = [0, 5, 10, 15, 30, 60];
-
-  static const List<String> allBosses = [
-    "Sangoon",
-    "Uturi",
-    "Bulgasal",
-    "Golden Pig King",
-    "Nouver",
-    "Karanda",
-    "Kzarka",
-    "Kutum",
-    "Garmoth",
-    "Muraka",
-    "Offin",
-    "Quint",
-    "Vell",
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -50,42 +35,46 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: [
               // Master Notification Switch Card
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF191F30),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF242C44)),
-                ),
-                child: SwitchListTile(
-                  activeThumbColor: const Color(0xFFFFB703),
-                  title: Text(
-                    'Push Notifications',
-                    style: GoogleFonts.rajdhani(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Material(
+                color: const Color(0xFF191F30),
+                borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF242C44)),
+                  ),
+                  child: SwitchListTile(
+                    activeThumbColor: const Color(0xFFFFB703),
+                    title: Text(
+                      'Push Notifications',
+                      style: GoogleFonts.rajdhani(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  subtitle: const Text(
-                    'Receive scheduled alerts when bosses are about to spawn',
-                    style: TextStyle(color: Color(0xFF90A4AE), fontSize: 12),
-                  ),
-                  value: settings.notificationsEnabled,
-                  onChanged: (val) async {
-                    if (val) {
-                      final granted = await NotificationService().requestPermissions();
-                      if (!context.mounted) return;
-                      if (!granted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Notification permission is required for push alerts.'),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
+                    subtitle: const Text(
+                      'Receive scheduled alerts when bosses are about to spawn',
+                      style: TextStyle(color: Color(0xFF90A4AE), fontSize: 12),
+                    ),
+                    value: settings.notificationsEnabled,
+                    onChanged: (val) async {
+                      if (val) {
+                        final granted = await NotificationService().requestPermissions();
+                        if (!context.mounted) return;
+                        if (!granted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Notification permission is required for push alerts.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
                       }
-                    }
-                    settings.setNotificationsEnabled(val);
-                  },
+                      settings.setNotificationsEnabled(val);
+                    },
+                  ),
                 ),
               ),
 
@@ -108,13 +97,16 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF191F30),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF242C44)),
-                ),
-                child: Column(
+              Material(
+                color: const Color(0xFF191F30),
+                borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF242C44)),
+                  ),
+                  child: Column(
                   children: [
                     RadioListTile<bool>(
                       activeColor: const Color(0xFFFFB703),
@@ -162,7 +154,7 @@ class SettingsScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: DropdownButtonFormField<String>(
-                          value: settings.manualTimezoneId,
+                          initialValue: settings.manualTimezoneId,
                           dropdownColor: const Color(0xFF191F30),
                           decoration: InputDecoration(
                             labelText: 'Select Timezone',
@@ -196,6 +188,7 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
 
               const SizedBox(height: 24),
 
@@ -251,7 +244,7 @@ class SettingsScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'BOSS ALERTS FILTER',
+                    'BOSS FILTER (TIMER & ALERTS)',
                     style: GoogleFonts.rajdhani(
                       color: const Color(0xFFFFB703),
                       fontSize: 14,
@@ -262,15 +255,11 @@ class SettingsScreen extends StatelessWidget {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: settings.notificationsEnabled
-                            ? () => settings.enableAllBosses(true)
-                            : null,
+                        onPressed: () => settings.enableAllBosses(true),
                         child: const Text('Select All', style: TextStyle(color: Color(0xFF00E5FF), fontSize: 12)),
                       ),
                       TextButton(
-                        onPressed: settings.notificationsEnabled
-                            ? () => settings.enableAllBosses(false)
-                            : null,
+                        onPressed: () => settings.enableAllBosses(false),
                         child: const Text('Clear', style: TextStyle(color: Colors.white54, fontSize: 12)),
                       ),
                     ],
@@ -279,14 +268,17 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF191F30),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF242C44)),
-                ),
-                child: Column(
-                  children: allBosses.asMap().entries.map((entry) {
+              Material(
+                color: const Color(0xFF191F30),
+                borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF242C44)),
+                  ),
+                  child: Column(
+                  children: ScheduleService.allBosses.asMap().entries.map((entry) {
                     final index = entry.key;
                     final bossName = entry.value;
                     final isChecked = settings.enabledBosses.contains(bossName);
@@ -305,17 +297,16 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ),
                           value: isChecked,
-                          onChanged: settings.notificationsEnabled
-                              ? (_) => settings.toggleBoss(bossName)
-                              : null,
+                          onChanged: (_) => settings.toggleBoss(bossName),
                         ),
-                        if (index < allBosses.length - 1)
+                        if (index < ScheduleService.allBosses.length - 1)
                           const Divider(color: Color(0xFF242C44), height: 1),
                       ],
                     );
                   }).toList(),
                 ),
               ),
+            ),
 
               const SizedBox(height: 32),
 

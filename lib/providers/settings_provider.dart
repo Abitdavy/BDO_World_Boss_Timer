@@ -126,21 +126,7 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> enableAllBosses(bool enable) async {
     if (enable) {
-      _enabledBosses = [
-        "Sangoon",
-        "Uturi",
-        "Bulgasal",
-        "Golden Pig King",
-        "Nouver",
-        "Karanda",
-        "Kzarka",
-        "Kutum",
-        "Garmoth",
-        "Muraka",
-        "Offin",
-        "Quint",
-        "Vell",
-      ];
+      _enabledBosses = List.from(ScheduleService.allBosses);
     } else {
       _enabledBosses.clear();
     }
@@ -178,6 +164,7 @@ class SettingsProvider extends ChangeNotifier {
       offsetMinutes: activeOffsetMinutes,
       timezoneCode: activeTimezoneCode,
       daysAhead: 7,
+      enabledBosses: _enabledBosses,
     );
     await _notificationService.scheduleBossNotifications(
       upcomingSpawns: upcoming,

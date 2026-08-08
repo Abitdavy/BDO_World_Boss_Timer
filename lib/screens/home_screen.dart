@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../models/boss_schedule_model.dart';
 import '../providers/settings_provider.dart';
 import '../services/schedule_service.dart';
 import '../widgets/next_boss_card.dart';
@@ -47,6 +46,152 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _showFilterBottomSheet(BuildContext context, SettingsProvider settings) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141926),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return Consumer<SettingsProvider>(
+          builder: (context, currentSettings, child) {
+            final allBosses = ScheduleService.allBosses;
+            final enabledCount = currentSettings.enabledBosses.length;
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.75,
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF242C44),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Header title & actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'BOSS FILTER',
+                            style: GoogleFonts.cinzel(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$enabledCount of ${allBosses.length} bosses active',
+                            style: GoogleFonts.rajdhani(
+                              color: const Color(0xFF90A4AE),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => currentSettings.enableAllBosses(true),
+                            child: Text(
+                              'Select All',
+                              style: GoogleFonts.rajdhani(
+                                color: const Color(0xFF00E5FF),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => currentSettings.enableAllBosses(false),
+                            child: Text(
+                              'Clear',
+                              style: GoogleFonts.rajdhani(
+                                color: Colors.white54,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: Color(0xFF242C44), height: 1),
+                  const SizedBox(height: 12),
+
+                  // Boss List
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: allBosses.length,
+                      separatorBuilder: (_, index) => const Divider(color: Color(0xFF242C44), height: 1),
+                      itemBuilder: (context, index) {
+                        final bossName = allBosses[index];
+                        final isSelected = currentSettings.enabledBosses.contains(bossName);
+                        final imagePath = ScheduleService.getBossImagePath(bossName);
+
+                        return CheckboxListTile(
+                          activeColor: const Color(0xFFFFB703),
+                          checkColor: Colors.black,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          secondary: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFFFFB703) : const Color(0xFF242C44),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(imagePath, fit: BoxFit.cover),
+                            ),
+                          ),
+                          title: Text(
+                            bossName,
+                            style: GoogleFonts.rajdhani(
+                              color: isSelected ? Colors.white : Colors.white54,
+                              fontSize: 16,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            ),
+                          ),
+                          value: isSelected,
+                          onChanged: (_) => currentSettings.toggleBoss(bossName),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
@@ -61,13 +206,17 @@ class _HomeScreenState extends State<HomeScreen> {
         final nextSpawn = widget.scheduleService.getNextSpawn(
           offsetMinutes: activeOffset,
           timezoneCode: tzCode,
+          enabledBosses: settings.enabledBosses,
         );
 
         final upcomingList = widget.scheduleService.getUpcomingSpawns(
           offsetMinutes: activeOffset,
           timezoneCode: tzCode,
           daysAhead: 3,
+          enabledBosses: settings.enabledBosses,
         );
+
+        final isFiltered = settings.enabledBosses.length < ScheduleService.allBosses.length;
 
         return Scaffold(
           backgroundColor: const Color(0xFF0F121C),
@@ -160,8 +309,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
+                          icon: Badge(
+                            isLabelVisible: isFiltered,
+                            label: Text('${settings.enabledBosses.length}'),
+                            backgroundColor: const Color(0xFFFF3366),
+                            child: Icon(
+                              Icons.filter_list_rounded,
+                              color: isFiltered ? const Color(0xFFFFB703) : const Color(0xFF90A4AE),
+                            ),
+                          ),
+                          onPressed: () => _showFilterBottomSheet(context, settings),
+                          tooltip: 'Filter Bosses',
+                        ),
+                        IconButton(
                           icon: const Icon(Icons.notifications_active_outlined, color: Color(0xFFFFB703)),
                           onPressed: widget.onOpenSettings,
+                          tooltip: 'Notification Settings',
                         ),
                       ],
                     ),
@@ -188,18 +351,55 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'UPCOMING SPAWNS',
-                            style: GoogleFonts.rajdhani(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'UPCOMING SPAWNS',
+                                style: GoogleFonts.rajdhani(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              if (isFiltered) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFB703).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: const Color(0xFFFFB703), width: 0.8),
+                                  ),
+                                  child: Text(
+                                    '${settings.enabledBosses.length}/${ScheduleService.allBosses.length}',
+                                    style: GoogleFonts.rajdhani(
+                                      color: const Color(0xFFFFB703),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.refresh, color: Color(0xFF90A4AE), size: 20),
-                            onPressed: () => setState(() {}),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.tune,
+                                  color: isFiltered ? const Color(0xFFFFB703) : const Color(0xFF90A4AE),
+                                  size: 20,
+                                ),
+                                onPressed: () => _showFilterBottomSheet(context, settings),
+                                tooltip: 'Filter Bosses',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.refresh, color: Color(0xFF90A4AE), size: 20),
+                                onPressed: () => setState(() {}),
+                                tooltip: 'Refresh',
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -207,12 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8),
 
                       if (upcomingList.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Center(
                             child: Text(
-                              'No upcoming spawns scheduled.',
-                              style: TextStyle(color: Colors.white54),
+                              isFiltered
+                                  ? 'No upcoming spawns match your boss filter.'
+                                  : 'No upcoming spawns scheduled.',
+                              style: const TextStyle(color: Colors.white54),
                             ),
                           ),
                         )
