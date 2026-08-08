@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../models/timezone_model.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
@@ -384,13 +385,21 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      'v1.0.10 (Build 11)',
-                      style: GoogleFonts.rajdhani(
-                        color: const Color(0xFF607D8B),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    FutureBuilder<PackageInfo>(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        final versionText = snapshot.hasData
+                            ? 'v${snapshot.data!.version} (Build ${snapshot.data!.buildNumber})'
+                            : '...';
+                        return Text(
+                          versionText,
+                          style: GoogleFonts.rajdhani(
+                            color: const Color(0xFF607D8B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
