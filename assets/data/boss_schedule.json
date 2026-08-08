@@ -1,0 +1,100 @@
+{
+  "game": "Black Desert Online",
+  "server": "SEA",
+  "timezone": "WIB",
+  "utc_offset": "+07:00",
+  "schedule": [
+    {
+      "day": "Monday",
+      "day_index": 1,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Karanda", "Bulgasal"]},
+        {"time": "10:00", "bosses": ["Kzarka", "Uturi"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Kutum", "Golden Pig King"]},
+        {"time": "19:00", "bosses": ["Karanda", "Sangoon"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "22:30", "bosses": ["Offin", "Uturi"]}
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "day_index": 2,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Nouver", "Sangoon"]},
+        {"time": "10:00", "bosses": ["Kutum", "Golden Pig King"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Kzarka", "Sangoon"]},
+        {"time": "18:00", "bosses": ["Quint", "Muraka"]},
+        {"time": "19:00", "bosses": ["Kzarka", "Uturi"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "22:30", "bosses": ["Nouver", "Bulgasal"]}
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "day_index": 3,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Offin", "Golden Pig King"]},
+        {"time": "10:00", "bosses": ["Nouver", "Bulgasal"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Karanda", "Uturi"]},
+        {"time": "19:00", "bosses": ["Kutum", "Bulgasal"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "23:00", "bosses": ["Vell"]}
+      ]
+    },
+    {
+      "day": "Thursday",
+      "day_index": 4,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Kutum", "Uturi"]},
+        {"time": "10:00", "bosses": ["Kzarka", "Sangoon"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Nouver", "Golden Pig King"]},
+        {"time": "19:00", "bosses": ["Kzarka", "Sangoon"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "22:30", "bosses": ["Karanda", "Uturi"]}
+      ]
+    },
+    {
+      "day": "Friday",
+      "day_index": 5,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Nouver", "Sangoon"]},
+        {"time": "10:00", "bosses": ["Kutum", "Bulgasal"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Karanda", "Uturi"]},
+        {"time": "19:00", "bosses": ["Nouver", "Golden Pig King"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "22:30", "bosses": ["Offin", "Bulgasal"]}
+      ]
+    },
+    {
+      "day": "Saturday",
+      "day_index": 6,
+      "spawns": [
+        {"time": "10:00", "bosses": ["Karanda", "Golden Pig King"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Kutum", "Sangoon"]},
+        {"time": "17:00", "bosses": ["Garmoth"]},
+        {"time": "18:00", "bosses": ["Quint", "Muraka"]},
+        {"time": "19:00", "bosses": ["Karanda", "Bulgasal"]}
+      ]
+    },
+    {
+      "day": "Sunday",
+      "day_index": 7,
+      "spawns": [
+        {"time": "00:30", "bosses": ["Kzarka", "Golden Pig King"]},
+        {"time": "10:00", "bosses": ["Nouver", "Sangoon"]},
+        {"time": "13:00", "bosses": ["Garmoth"]},
+        {"time": "14:00", "bosses": ["Kutum", "Bulgasal"]},
+        {"time": "15:00", "bosses": ["Vell"]},
+        {"time": "19:15", "bosses": ["Kzarka", "Uturi"]},
+        {"time": "22:15", "bosses": ["Garmoth"]},
+        {"time": "22:30", "bosses": ["Nouver", "Golden Pig King"]}
+      ]
+    }
+  ]
+}
