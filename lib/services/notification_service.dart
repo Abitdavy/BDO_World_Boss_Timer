@@ -87,11 +87,11 @@ class NotificationService {
     await _notificationsPlugin.cancelAll();
 
     int notificationId = 1000;
-    final now = DateTime.now();
+    final nowUtc = DateTime.now().toUtc();
 
     for (final upcoming in upcomingSpawns) {
       final spawn = upcoming.spawn;
-      final spawnDateTime = upcoming.spawnTimeWib;
+      final spawnTimeUtc = upcoming.spawnTimeUtc;
 
       final activeBosses = spawn.bosses.where((b) => enabledBosses.contains(b)).toList();
       if (activeBosses.isEmpty) continue;
@@ -99,14 +99,27 @@ class NotificationService {
       final bossNamesString = activeBosses.join(' & ');
 
       for (final minutesBefore in leadTimeMinutes) {
-        final alertTime = spawnDateTime.subtract(Duration(minutes: minutesBefore));
-        if (alertTime.isBefore(now)) continue;
+        final alertTimeUtc = spawnTimeUtc.subtract(Duration(minutes: minutesBefore));
+        if (alertTimeUtc.isBefore(nowUtc)) continue;
 
-        final tzAlertTime = tz.TZDateTime.from(alertTime, tz.local);
+        final tzAlertTime = tz.TZDateTime.from(alertTimeUtc, tz.UTC);
 
         final String bodyText = minutesBefore == 0
             ? '$bossNamesString ${activeBosses.length > 1 ? "are" : "is"} spawning NOW!'
-            : '$bossNamesString spawns in $minutesBefore minutes (WIB ${spawn.timeWib})!';
+            : '$bossNamesString spawns in $minutesBefore minutes (${upcoming.timezoneCode} ${upcoming.displayTime})!';
+
+        const notificationDetails = NotificationDetails(
+          android: AndroidNotificationDetails(
+            'bdo_boss_channel_v3',
+            'BDO World Boss Notifications',
+            channelDescription: 'Alerts for BDO World Boss Spawns',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: true,
+            icon: '@mipmap/ic_launcher',
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          ),
+        );
 
         try {
           await _notificationsPlugin.zonedSchedule(
@@ -114,23 +127,23 @@ class NotificationService {
             title: '⚔️ Boss Alert: $bossNamesString',
             body: bodyText,
             scheduledDate: tzAlertTime,
-            notificationDetails: const NotificationDetails(
-              android: AndroidNotificationDetails(
-                'bdo_boss_channel_v3',
-                'BDO World Boss Notifications',
-                channelDescription: 'Alerts for BDO World Boss Spawns',
-                importance: Importance.max,
-                priority: Priority.high,
-                showWhen: true,
-                icon: '@mipmap/ic_launcher',
-                largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-              ),
-            ),
+            notificationDetails: notificationDetails,
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
             payload: 'timer',
           );
         } catch (_) {
-          // Fallback if exact alarm is restricted by system
+          // Fallback if exact alarm permission is restricted on Android 12+
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId++,
+              title: '⚔️ Boss Alert: $bossNamesString',
+              body: bodyText,
+              scheduledDate: tzAlertTime,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              payload: 'timer',
+            );
+          } catch (_) {}
         }
       }
     }
