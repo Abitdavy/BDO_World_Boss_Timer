@@ -54,7 +54,7 @@ class NotificationService {
   Future<void> showTestNotification({required String bossName, required int leadMinutes}) async {
     await init();
     const androidDetails = AndroidNotificationDetails(
-      'bdo_boss_channel_v2',
+      'bdo_boss_channel_v3',
       'BDO World Boss Notifications',
       channelDescription: 'Alerts for BDO World Boss Spawns',
       importance: Importance.max,
@@ -116,7 +116,7 @@ class NotificationService {
             scheduledDate: tzAlertTime,
             notificationDetails: const NotificationDetails(
               android: AndroidNotificationDetails(
-                'bdo_boss_channel_v2',
+                'bdo_boss_channel_v3',
                 'BDO World Boss Notifications',
                 channelDescription: 'Alerts for BDO World Boss Spawns',
                 importance: Importance.max,

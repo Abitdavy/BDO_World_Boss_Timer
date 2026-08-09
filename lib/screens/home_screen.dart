@@ -309,19 +309,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: Badge(
-                            isLabelVisible: isFiltered,
-                            label: Text('${settings.enabledBosses.length}'),
-                            backgroundColor: const Color(0xFFFF3366),
-                            child: Icon(
-                              Icons.filter_list_rounded,
-                              color: isFiltered ? const Color(0xFFFFB703) : const Color(0xFF90A4AE),
-                            ),
-                          ),
-                          onPressed: () => _showFilterBottomSheet(context, settings),
-                          tooltip: 'Filter Bosses',
-                        ),
-                        IconButton(
                           icon: const Icon(Icons.notifications_active_outlined, color: Color(0xFFFFB703)),
                           onPressed: widget.onOpenSettings,
                           tooltip: 'Notification Settings',
