@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import '../models/boss_schedule_model.dart';
+import 'schedule_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -51,9 +55,26 @@ class NotificationService {
     return status.isGranted;
   }
 
+  Future<String?> _getBossImagePath(String bossName) async {
+    try {
+      final assetPath = ScheduleService.getBossImagePath(bossName);
+      final byteData = await rootBundle.load(assetPath);
+      final tempDir = await getTemporaryDirectory();
+      final ext = assetPath.split('.').last;
+      final file = File('${tempDir.path}/boss_${bossName.replaceAll(' ', '_')}.$ext');
+      await file.writeAsBytes(
+        byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+      );
+      return file.path;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> showTestNotification({required String bossName, required int leadMinutes}) async {
     await init();
-    const androidDetails = AndroidNotificationDetails(
+    final localImagePath = await _getBossImagePath(bossName);
+    final androidDetails = AndroidNotificationDetails(
       'bdo_boss_channel_v3',
       'BDO World Boss Notifications',
       channelDescription: 'Alerts for BDO World Boss Spawns',
@@ -61,9 +82,11 @@ class NotificationService {
       priority: Priority.high,
       ticker: 'BDO Boss Alert',
       icon: '@mipmap/ic_launcher',
-      largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+      largeIcon: localImagePath != null
+          ? FilePathAndroidBitmap(localImagePath)
+          : const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
     );
-    const details = NotificationDetails(android: androidDetails);
+    final details = NotificationDetails(android: androidDetails);
 
     final String leadText = leadMinutes == 0
         ? 'is spawning NOW!'
@@ -97,6 +120,11 @@ class NotificationService {
       if (activeBosses.isEmpty) continue;
 
       final bossNamesString = activeBosses.join(' & ');
+      final firstBossName = activeBosses.first;
+      final localImagePath = await _getBossImagePath(firstBossName);
+      final largeIconBitmap = localImagePath != null
+          ? FilePathAndroidBitmap(localImagePath)
+          : const DrawableResourceAndroidBitmap('@mipmap/ic_launcher');
 
       for (final minutesBefore in leadTimeMinutes) {
         final alertTimeUtc = spawnTimeUtc.subtract(Duration(minutes: minutesBefore));
@@ -108,7 +136,7 @@ class NotificationService {
             ? '$bossNamesString ${activeBosses.length > 1 ? "are" : "is"} spawning NOW!'
             : '$bossNamesString spawns in $minutesBefore minutes (${upcoming.timezoneCode} ${upcoming.displayTime})!';
 
-        const notificationDetails = NotificationDetails(
+        final notificationDetails = NotificationDetails(
           android: AndroidNotificationDetails(
             'bdo_boss_channel_v3',
             'BDO World Boss Notifications',
@@ -117,7 +145,7 @@ class NotificationService {
             priority: Priority.high,
             showWhen: true,
             icon: '@mipmap/ic_launcher',
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+            largeIcon: largeIconBitmap,
           ),
         );
 
