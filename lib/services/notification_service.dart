@@ -75,7 +75,7 @@ class NotificationService {
     await init();
     final localImagePath = await _getBossImagePath(bossName);
     final androidDetails = AndroidNotificationDetails(
-      'bdo_boss_channel_v5',
+      'bdo_boss_channel_v6',
       'BDO World Boss Notifications',
       channelDescription: 'Alerts for BDO World Boss Spawns',
       importance: Importance.max,
@@ -138,7 +138,7 @@ class NotificationService {
 
         final notificationDetails = NotificationDetails(
           android: AndroidNotificationDetails(
-            'bdo_boss_channel_v5',
+            'bdo_boss_channel_v6',
             'BDO World Boss Notifications',
             channelDescription: 'Alerts for BDO World Boss Spawns',
             importance: Importance.max,
